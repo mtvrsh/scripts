@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+set -e
+
+NOTE_DIR="$HOME/documents/notes/"
+
+query=
+[ "$1" ] && query="-q $1"
+f=$(fd -t f . "$NOTE_DIR" | cut -d'/' -f 6- |
+    fzf --select-1 $query)
+vi "$NOTE_DIR""$f"

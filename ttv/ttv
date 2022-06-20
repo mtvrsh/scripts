@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+channel="$(./ttv.py | fzf)"
+
+mpv --profile=low-latency "$@" https://twitch.tv/"$channel"
