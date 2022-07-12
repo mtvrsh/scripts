@@ -1,10 +1,10 @@
-# Personnal collection of scripts
+# Personal collection of scripts
 
 ## Scripts
 
-* ttv - list online twitch streams and play them without web browser
+* ttv - list online twitch streams and play them with mpv
 * spotify-sort-albums - backup, restore and sort spotify albums
-* nt - simple terminal notepad
+* nt - bash + vim + fzf = simple terminal notepad
 
 ## Dependencies
 
