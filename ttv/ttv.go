@@ -1,36 +1,43 @@
-package main
-// Same as ttv.sh but in Go*
-// Not quite, doesn't read rc file
+// Same as ttv.sh but in Go
 // Use through ttv wrapper
-
+package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 )
 
-func main() {
-	const TWITCH_URL = "https://www.twitch.tv/"
-
-	channel_names := []string{
-		"",
+func readConfig(path string) []string {
+	f, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatal(err)
 	}
+	return strings.Split(string(f), "\n")
+}
+
+func main() {
+	const (
+		TWITCH_URL       = "https://www.twitch.tv/"
+		DEFAULT_CFG_PATH = "$HOME/.config/ttv/ttv.rc"
+	)
+	channels := readConfig(os.ExpandEnv(DEFAULT_CFG_PATH))
 
 	var wg sync.WaitGroup
-	for _, channel := range channel_names {
+	for _, channel := range channels {
 		wg.Add(1)
 		go func(channel string) {
 			resp, err := http.Get(TWITCH_URL + channel)
-			defer resp.Body.Close()
 			defer wg.Done()
 			if err != nil {
 				log.Println(err)
 			}
-			page, err := ioutil.ReadAll(resp.Body)
+			defer resp.Body.Close()
+			page, err := io.ReadAll(resp.Body)
 			if err != nil {
 				log.Println(err)
 			}

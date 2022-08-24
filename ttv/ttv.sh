@@ -2,7 +2,7 @@
 # ttv.sh - query twitch.tv for online streams and open selected one in mpv
 # ttv.sh <mpv options>
 # List channels in ttv.rc, default is ~/.config/ttv/ttv.rc, 1 name per line.
-set -e
+set -e pipefail
 
 TTV_RC="${TTV_RC:=$HOME/.config/ttv/ttv.rc}"
 
