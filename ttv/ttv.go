@@ -28,15 +28,16 @@ func main() {
 	channels := readConfig(os.ExpandEnv(DEFAULT_CFG_PATH))
 
 	var wg sync.WaitGroup
+	wg.Add(len(channels))
+
 	for _, channel := range channels {
-		wg.Add(1)
 		go func(channel string) {
 			resp, err := http.Get(TWITCH_URL + channel)
 			defer wg.Done()
+			defer resp.Body.Close()
 			if err != nil {
 				log.Println(err)
 			}
-			defer resp.Body.Close()
 			page, err := io.ReadAll(resp.Body)
 			if err != nil {
 				log.Println(err)

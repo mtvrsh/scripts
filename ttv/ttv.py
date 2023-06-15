@@ -37,7 +37,7 @@ def main():
 
     for channel in channels:
         # name[:-1] to strip "\n" in link
-        thread = threading.Thread(target=is_live, args=(channel[:-1],))
+        thread = threading.Thread(target=is_live, args=(channel[:-1], ))
         thread.start()
         threads.append(thread)
 

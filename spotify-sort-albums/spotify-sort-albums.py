@@ -6,13 +6,11 @@
 # Fill ./env with appropriate values and source it.
 # $ vi env; source ./env
 
-from datetime import date
 import argparse
 import os
 import pickle
 import sys
-
-# import time
+from datetime import date
 
 import spotipy
 
@@ -62,9 +60,8 @@ if token:
 
     if args.b:
         try:
-            with open(
-                username + "_ids_" + str(date.today()) + ".bak", "xb"
-            ) as f:
+            with open(username + "_ids_" + str(date.today()) + ".bak",
+                      "xb") as f:
                 pickle.dump(sorted_album_ids, f)
                 print("Backup created succesfully", "\n")
         except FileExistsError:
@@ -100,8 +97,7 @@ if token:
     if sorted_album_ids_copy and input("Add albums? [y/n] ") == "y":
         for a in sorted_album_ids:
             sp.current_user_saved_albums_add(
-                albums=[sorted_album_ids_copy.pop()]
-            )
+                albums=[sorted_album_ids_copy.pop()])
         print("Done")
 
 else:
