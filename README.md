@@ -1,16 +1,8 @@
 # Personal collection of scripts
 
-## Scripts
+[![gitart](https://asciinema.org/a/ad1gyIXeIOe56067x7sAzmPxK.svg)](https://asciinema.org/a/ad1gyIXeIOe56067x7sAzmPxK)
 
-* ttv - list online twitch streams and play them with mpv
-* spotify-sort-albums - backup, restore and sort spotify albums
-* nt - sh + vim + fzf = simple terminal notepad
-* timediff - display time difference between two date strings
-* gitart - put ascii art into git log
-
-## Dependencies
-
-* ttv - bash, curl, [fzf](https://github.com/junegunn/fzf), [mpv](https://mpv.io/)
-* spotify-sort-albums - python, [spotipy](https://github.com/plamere/spotipy)
-* nt - [fzf](https://github.com/junegunn/fzf)
-* timediff - sh, date
+- gitart - writes ascii art into git log *(bash, git, tac)*
+- spotify-sort-albums - backup, restore and sort albums in spotify library *(python, [spotipy](https://github.com/plamere/spotipy))*
+- timediff - display time difference between two date strings *(sh, date)*
+- ttv - list online twitch streams and play them with mpv *(bash, curl, fzf, mpv)*

@@ -1,12 +1,12 @@
 #!/bin/sh
 #
+
 set -e
 
 NOTES_DIR="$HOME/documents/notes/"
-__EDITOR="${EDITOR:=vi}"
 
 query=
 [ "$1" ] && query="-q $1"
 f=$(fd -t f . "$NOTES_DIR" | cut -d'/' -f 6- |
 	fzf --select-1 $query)
-"${__EDITOR}" "$NOTES_DIR""$f"
+"${EDITOR:=vi}" "$NOTES_DIR""$f"

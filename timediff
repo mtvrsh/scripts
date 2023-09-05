@@ -15,25 +15,26 @@ USAGE() {
 	echo "  timediff 7:06 18:31"
 	echo "  timediff 213 now"
 	echo "  timediff now 2023-1-1"
+	echo "  timediff yesterday\ 4:50 now"
 	echo "  timediff now next\ thursday\ 16:20"
 	echo "  timediff last\ wednesday next\ friday"
-	echo "  timediff \"10 days ago 1:11\" now"
-	echo "  timediff \"2 april 2005 21:37\" now"
+	echo '  timediff "10 days ago 1:11" now'
+	echo '  timediff "2 april 2005 21:37" now'
 	exit 1
 }
 
 while getopts "hv" arg; do
 	case $arg in
-	v)
-		VERBOSE=1
-		shift
-		;;
-	h)
-		USAGE
-		;;
-	*)
-		exit 1
-		;;
+		v)
+			VERBOSE=1
+			shift
+			;;
+		h)
+			USAGE
+			;;
+		*)
+			exit 1
+			;;
 	esac
 done
 
@@ -44,7 +45,7 @@ END=$(date -d "$2" +%s)
 DIFF=$((END - START))
 DAYS=$((DIFF / (60 * 60 * 24)))
 HOURS=$((DIFF / (60 * 60) - 24 * DAYS))
-MINUTES=$(((DIFF / 60 - 60 * HOURS - 24 * 60 * DAYS)))
+MINUTES=$((DIFF / 60 - 60 * HOURS - 24 * 60 * DAYS))
 
 [ $VERBOSE ] && echo START="$START" END="$END" DIFF="$DIFF" >&2
 
