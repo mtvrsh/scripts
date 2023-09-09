@@ -1,4 +1,4 @@
-// Same as ttv.sh but in Go
+// Same as ttv but in Go
 // Use through ttv wrapper
 package main
 

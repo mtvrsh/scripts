@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Same as ttv.sh but in Python
+# Same as ttv but in Python
 # Use through ttv wrapper
 
 import os

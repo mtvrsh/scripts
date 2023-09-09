@@ -1,12 +1,47 @@
-#!/bin/bash
+#!/usr/bin/bash
+# ttv VIDEO_PLAYER_OPTS - pick and play twitch streams from terminal
+# example ttv.rc:
+# CHANNELS="channel1 channel2 channel3 ..."
+# PLAYER="celluloid" # optional
+# PLAYER_OPTS="--mpv-profile=low-latency" # optional
+
 set -e
 
-if [ "$1" = "go" ]; then
-    echo go
-    channel="$(go run ttv.go | fzf)"
-else
-    echo python
-    channel="$(./ttv.py | fzf)"
+[ -v XDG_CONFIG_HOME ] && TTV_RC="$XDG_CONFIG_HOME/ttv/ttv.rc"
+TTV_RC="${TTV_RC:=$HOME/.config/ttv/ttv.rc}"
+
+if [ ! -f "$TTV_RC" ]; then
+	echo "$TTV_RC" not found
+	exit 1
+elif [ ! -s "$TTV_RC" ]; then
+	echo "$TTV_RC" is empty
+	exit 1
 fi
 
-mpv --profile=low-latency "$@" https://twitch.tv/"$channel"
+source "$TTV_RC"
+
+URL="https://www.twitch.tv/"
+PLAYER="${PLAYER:=mpv}"
+PLAYER_OPTIONS="${PLAYER_OPTIONS:=--profile=low-latency}"
+GREP="grep"
+[ -x "$(type -p rg)" ] && GREP="rg"
+
+is_live() {
+	if curl -s "$URL""$1" | ${GREP} -o "isLiveBroadcast" &> /dev/null; then
+		echo "$1"
+	fi
+}
+
+live_channels() {
+	for channel in $CHANNELS; do
+		is_live "$channel" &
+	done
+}
+
+if [ -n "$CHANNELS" ]; then
+	name="$(live_channels | fzf)"
+	${PLAYER} ${PLAYER_OPTS} "$@" "${URL}${name}"
+else
+	echo \$CHANNELS is empty
+	exit 1
+fi
