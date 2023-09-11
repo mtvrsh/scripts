@@ -8,7 +8,7 @@
 set -e
 
 [ -v XDG_CONFIG_HOME ] && TTV_RC="$XDG_CONFIG_HOME/ttv/ttv.rc"
-TTV_RC="${TTV_RC:=$HOME/.config/ttv/ttv.rc}"
+: "${TTV_RC:=$HOME/.config/ttv/ttv.rc}"
 
 if [ ! -f "$TTV_RC" ]; then
 	echo "$TTV_RC" not found
@@ -21,13 +21,14 @@ fi
 source "$TTV_RC"
 
 URL="https://www.twitch.tv/"
-PLAYER="${PLAYER:=mpv}"
-PLAYER_OPTIONS="${PLAYER_OPTIONS:=--profile=low-latency}"
+: "${PLAYER:=mpv}"
+: "${PLAYER_OPTIONS:=--profile=low-latency}"
 GREP="grep"
-[ -x "$(type -p rg)" ] && GREP="rg"
+command -v rg > /dev/null && GREP="rg"
 
 is_live() {
-	if curl -s "$URL""$1" | ${GREP} -o "isLiveBroadcast" &> /dev/null; then
+	[ "$DEBUG" ] && echo "curl -s $URL$1 | ${GREP} -o \"isLiveBroadcast\" &> /dev/null"
+	if curl -s "${URL}${1}" | ${GREP} -o "isLiveBroadcast" &> /dev/null; then
 		echo "$1"
 	fi
 }
@@ -39,6 +40,11 @@ live_channels() {
 }
 
 if [ -n "$CHANNELS" ]; then
+	[ "$DEBUG" ] && {
+		live_channels
+		wait < <(jobs -p)
+		exit
+	}
 	name="$(live_channels | fzf)"
 	${PLAYER} ${PLAYER_OPTS} "$@" "${URL}${name}"
 else
