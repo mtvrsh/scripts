@@ -9,9 +9,8 @@ FD_CMD="fd -t f . --base-directory ${NOTES_DIR}"
 [ "$1" ] && QUERY="-q $1"
 
 FILE=$(
-	$FD_CMD | fzf --header="del:delete  alt-n:new  alt-l:lazygit  alt-p: mdcat" \
+	$FD_CMD | fzf --header="del:delete  alt-l:lazygit  alt-p: mdcat" \
 		--bind "del:execute-silent(rm $NOTES_DIR{})+reload($FD_CMD)" \
-		--bind "alt-n:execute(cd $NOTES_DIR && $SHELL)+reload($FD_CMD)" \
 		--bind "alt-l:execute(lazygit -p $NOTES_DIR)" \
 		--bind "alt-p:become(VIEWER=mdcat $0)" \
 		--preview-window=up --preview "$VIEWER $NOTES_DIR/{}" --select-1 $QUERY
