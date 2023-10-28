@@ -1,0 +1,61 @@
+#!/bin/sh
+set -e
+
+FAN_SPEED=29
+
+# Above AUTO_TEMP hand over control to driver/bios
+AUTO_TEMP=65
+
+# Temperature when fan turns on
+THRESHOLD_FAN_OFF=60
+
+# Keep fan spinning till we reach this temperature
+THRESHOLD_FAN_ON=45
+
+# Polling interval
+INTERVAL=20
+
+disable_fan_control() {
+	nvidia-settings -a "GPUFanControlState=0" > /dev/null 2>&1
+}
+
+get_temperature() {
+	current_temperature=$(nvidia-settings -q "GPUCoreTemp" -t)
+}
+
+get_fan_speed() {
+	current_fan_speed=$(nvidia-settings -q "GPUCurrentFanSpeed" -t)
+}
+
+set_fan_speed() {
+	nvidia-settings -a "GPUFanControlState=1" -a "GPUTargetFanSpeed=$1" > /dev/null 2>&1
+}
+
+apply_settings() {
+	get_temperature
+	get_fan_speed
+
+	if [ "$current_fan_speed" -eq 0 ] && [ "$current_temperature" -gt "$THRESHOLD_FAN_OFF" ]; then
+		set_fan_speed $FAN_SPEED
+		return
+	fi
+	if [ "$current_fan_speed" -gt 0 ] && [ "$current_temperature" -lt "$THRESHOLD_FAN_ON" ]; then
+		set_fan_speed 0
+		return
+	fi
+	if [ "$current_temperature" -gt "$AUTO_TEMP" ]; then
+		disable_fan_control
+		return
+	fi
+}
+
+echo "$0 started $(date)"
+trap "disable_fan_control" EXIT QUIT INT
+nvidia-settings -a "GPUFanControlState=1" > /dev/null 2>&1
+
+while true; do
+	apply_settings
+	sleep $INTERVAL
+done
+
+echo "$0 exiting $(date)"
