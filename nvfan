@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-FAN_SPEED=29
+FAN_SPEED=30
 
 # Above AUTO_TEMP hand over control to driver/bios
 AUTO_TEMP=65
@@ -10,25 +10,33 @@ AUTO_TEMP=65
 THRESHOLD_FAN_OFF=60
 
 # Keep fan spinning till we reach this temperature
-THRESHOLD_FAN_ON=45
+THRESHOLD_FAN_ON=44
 
 # Polling interval
 INTERVAL=20
 
+# required if run in a different environment (as a service)
+# for WAYLAND_DISPLAY=wayland-1 set to 1
+CTRL_DISPLAY=1
+
+enable_fan_control() {
+	nvidia-settings --ctrl-display=$CTRL_DISPLAY -a "GPUFanControlState=1" > /dev/null 2>&1
+}
+
 disable_fan_control() {
-	nvidia-settings -a "GPUFanControlState=0" > /dev/null 2>&1
+	nvidia-settings --ctrl-display=$CTRL_DISPLAY -a "GPUFanControlState=0" > /dev/null 2>&1
 }
 
 get_temperature() {
-	current_temperature=$(nvidia-settings -q "GPUCoreTemp" -t)
+	current_temperature=$(nvidia-settings --ctrl-display=$CTRL_DISPLAY -q "GPUCoreTemp" -t)
 }
 
 get_fan_speed() {
-	current_fan_speed=$(nvidia-settings -q "GPUCurrentFanSpeed" -t)
+	current_fan_speed=$(nvidia-settings --ctrl-display=$CTRL_DISPLAY -q "GPUCurrentFanSpeed" -t)
 }
 
 set_fan_speed() {
-	nvidia-settings -a "GPUFanControlState=1" -a "GPUTargetFanSpeed=$1" > /dev/null 2>&1
+	nvidia-settings --ctrl-display=$CTRL_DISPLAY -a "GPUFanControlState=1" -a "GPUTargetFanSpeed=$1" > /dev/null 2>&1
 }
 
 apply_settings() {
@@ -49,9 +57,13 @@ apply_settings() {
 	fi
 }
 
+[ $(id -u) -ne 0 ] && {
+	echo must be run as root
+	exit 1
+}
 echo "$0 started $(date)"
 trap "disable_fan_control" EXIT QUIT INT
-nvidia-settings -a "GPUFanControlState=1" > /dev/null 2>&1
+enable_fan_control
 
 while true; do
 	apply_settings
