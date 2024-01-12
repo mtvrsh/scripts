@@ -9,11 +9,11 @@ FD_CMD="fd -t f . --base-directory ${NOTES_DIR}"
 [ "$1" ] && QUERY="-q $1"
 
 FILE=$(
-	$FD_CMD | fzf --header="alt-q:quit  alt-d:delete  alt-l:lazygit  alt-o:copy" \
+	$FD_CMD | fzf --header="alt-q:quit  alt-d:delete  alt-l:lazygit  alt-k:copy" \
 		--bind "alt-q:abort" \
 		--bind "alt-d:execute-silent(rm $NOTES_DIR{})+reload($FD_CMD)" \
 		--bind "alt-l:execute(lazygit -p $NOTES_DIR)" \
-		--bind "alt-o:execute:(cat $NOTES_DIR{}|fzf --tac|wl-copy)" \
+		--bind "alt-k:execute(cat $NOTES_DIR{}|fzf --tac|wl-copy)" \
 		--preview-window=up,70% --preview "$VIEWER $NOTES_DIR{}" --select-1 $QUERY
 )
 ${EDITOR-vi} "${NOTES_DIR}${FILE}" && $0
