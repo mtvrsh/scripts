@@ -1,4 +1,6 @@
 #!/bin/sh
+# this script stops my gpu fans from constantly turning on and off
+# making annoying noise
 set -e
 
 FAN_SPEED=30
@@ -13,7 +15,7 @@ THRESHOLD_FAN_OFF=60
 THRESHOLD_FAN_ON=44
 
 # Polling interval
-INTERVAL=20
+INTERVAL=30
 
 # required if run in a different environment (as a service)
 # for WAYLAND_DISPLAY=wayland-1 set to 1
