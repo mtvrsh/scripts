@@ -12,7 +12,7 @@ AUTO_TEMP=65
 THRESHOLD_FAN_OFF=60
 
 # Keep fan spinning till we reach this temperature
-THRESHOLD_FAN_ON=44
+THRESHOLD_FAN_ON=45
 
 # Polling interval
 INTERVAL=30
