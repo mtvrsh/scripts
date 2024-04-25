@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -11,15 +12,34 @@ import (
 	"strings"
 )
 
+type runeValue struct {
+	r rune
+}
+
+func (v runeValue) String() string {
+	return string(v.r)
+}
+
+func (v *runeValue) Set(s string) error {
+	if len(s) != 1 {
+		return errors.New("delimeter must be single character")
+	}
+	v.r = rune(s[0])
+	return nil
+}
+
 var (
 	ignoreCase      bool
-	inplace         bool
 	ignoreNewLines  bool
+	inplace         bool
+	oneField        uint
 	skipFirstChars  uint
 	skipLastChars   uint
 	skipFirstFields uint
 	skipLastFields  uint
-	oneField        uint
+	delimeter       runeValue
+
+	fieldsFunc func(string) []string
 )
 
 func main() {
@@ -38,6 +58,7 @@ func main() {
 	flag.UintVar(&skipLastChars, "cl", 0, "skip comparing last `N` characters")
 	flag.UintVar(&skipFirstFields, "ff", 0, "skip comparing first `N` fields")
 	flag.UintVar(&skipLastFields, "fl", 0, "skip comparing last `N` fields")
+	flag.Var(&delimeter, "d", "delimeter used for splitting fields (default: unicode whitespace)")
 	flag.Parse()
 
 	var operations []func(string) string
@@ -63,6 +84,12 @@ func main() {
 		operations = append(operations, func(s string) string {
 			return s
 		})
+	}
+
+	if delimeter.r == 0 { // not set
+		fieldsFunc = strings.Fields
+	} else {
+		fieldsFunc = fields
 	}
 
 	if flag.NArg() == 0 {
@@ -164,29 +191,35 @@ func skipLastCharsOp(s string) string {
 
 func skipFirstFieldsOp(s string) string {
 	start := int(skipFirstFields)
-	f := strings.Fields(s)
+	f := fieldsFunc(s)
 	l := len(f)
 	if start > l {
-		return s
+		return ""
 	}
 	return strings.Join(f[start:], " ")
 }
 
 func skipLastFieldsOp(s string) string {
 	end := int(skipLastFields)
-	f := strings.Fields(s)
+	f := fieldsFunc(s)
 	l := len(f)
 	if end > l {
-		return s
+		return ""
 	}
 	return strings.Join(f[:l-end], " ")
 }
 
 func oneFieldOp(s string) string {
 	index := oneField
-	f := strings.Fields(s)
+	f := fieldsFunc(s)
 	if oneField > uint(len(f)) {
-		return s
+		return ""
 	}
 	return strings.Join(f[index-1:index], " ")
+}
+
+func fields(s string) []string {
+	return strings.FieldsFunc(s, func(c rune) bool {
+		return c == delimeter.r
+	})
 }
