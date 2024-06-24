@@ -21,11 +21,11 @@ INTERVAL=30
 # for WAYLAND_DISPLAY=wayland-1 set to 1
 CTRL_DISPLAY=1
 
-enable_fan_control() {
+enable_manual_fan_control() {
 	nvidia-settings --ctrl-display=$CTRL_DISPLAY -a "GPUFanControlState=1" > /dev/null 2>&1
 }
 
-disable_fan_control() {
+disable_manual_fan_control() {
 	nvidia-settings --ctrl-display=$CTRL_DISPLAY -a "GPUFanControlState=0" > /dev/null 2>&1
 }
 
@@ -45,27 +45,27 @@ apply_settings() {
 	get_temperature
 	get_fan_speed
 
-	if [ "$current_fan_speed" -eq 0 ] && [ "$current_temperature" -gt "$THRESHOLD_FAN_OFF" ]; then
+	if [ "$current_fan_speed" -ne $FAN_SPEED ] && [ "$current_temperature" -gt $THRESHOLD_FAN_OFF ]; then
 		set_fan_speed $FAN_SPEED
 		return
 	fi
-	if [ "$current_fan_speed" -gt 0 ] && [ "$current_temperature" -lt "$THRESHOLD_FAN_ON" ]; then
+	if [ "$current_fan_speed" -ne 0 ] && [ "$current_temperature" -lt $THRESHOLD_FAN_ON ]; then
 		set_fan_speed 0
 		return
 	fi
-	if [ "$current_temperature" -gt "$AUTO_TEMP" ]; then
-		disable_fan_control
+	if [ "$current_temperature" -gt $AUTO_TEMP ]; then
+		disable_manual_fan_control
 		return
 	fi
 }
 
-[ $(id -u) -ne 0 ] && {
+[ "$(id -u)" -ne 0 ] && {
 	echo must be run as root
 	exit 1
 }
 echo "$0 started $(date)"
-trap "disable_fan_control" EXIT QUIT INT
-enable_fan_control
+trap "disable_manual_fan_control" EXIT QUIT INT
+enable_manual_fan_control
 
 while true; do
 	apply_settings
