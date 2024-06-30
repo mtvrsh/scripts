@@ -44,17 +44,23 @@ set_fan_speed() {
 apply_settings() {
 	get_temperature
 	get_fan_speed
+	MANUAL=0
 
-	if [ "$current_fan_speed" -ne $FAN_SPEED ] && [ "$current_temperature" -gt $THRESHOLD_FAN_OFF ]; then
+	if [ "$current_temperature" -gt $AUTO_TEMP ]; then
+		disable_manual_fan_control
+		MANUAL=0
+		return
+	else
+		MANUAL=1
+	fi
+
+	if [ "$MANUAL" -eq 1 ] && [ "$current_temperature" -gt $THRESHOLD_FAN_OFF ]; then
 		set_fan_speed $FAN_SPEED
 		return
 	fi
-	if [ "$current_fan_speed" -ne 0 ] && [ "$current_temperature" -lt $THRESHOLD_FAN_ON ]; then
+
+	if [ "$MANUAL" -eq 1 ] && [ "$current_temperature" -lt $THRESHOLD_FAN_ON ]; then
 		set_fan_speed 0
-		return
-	fi
-	if [ "$current_temperature" -gt $AUTO_TEMP ]; then
-		disable_manual_fan_control
 		return
 	fi
 }
