@@ -1,0 +1,51 @@
+#!/bin/python
+
+from argparse import ArgumentParser
+from requests import RequestException, get
+
+def icon(code: int, is_day: bool) -> str:
+    """Get Weather Nerd Font based on Open-Meteo weather code and time of day
+
+    https://nerdfonts.com/cheat-sheet
+    https://open-meteo.com/en/docs
+    """
+
+    icons = {
+        (0,)                : [" ", " "],
+        (1,)                : [" ", " "],
+        (2,)                : [" ", " "],
+        (3,)                : [" ", " "],
+        (45, 48)            : [" ", " "],
+        (51, 53, 55, 56, 57): [" ", " "],
+        (61, 63, 65, 66, 67): [" ", " "],
+        (71, 73, 75, 77)    : [" ", " "],
+        (80, 81, 82)        : [" ", " "],
+        (85, 86)            : [" ", " "],
+        (95, 96, 99)        : [" ", " "]
+    }
+
+    return next((i[is_day] for c, i in icons.items() if code in c), "")
+
+parser = ArgumentParser(description="Weather Icon with current temperature")
+parser.add_argument("-l", metavar="LATITUDE", type=float, required=True)
+parser.add_argument("-L", metavar="LONGITUDE", type=float, required=True)
+parser.add_argument("-t", metavar="TIMEOUT", type=int, default=5)
+args = parser.parse_args()
+
+try:
+    wtr = get(
+        "https://api.open-meteo.com/v1/forecast",
+        params={"latitude": args.l, "longitude": args.L, "current": ["temperature_2m", "weather_code", "is_day"]},
+        hooks={"response": lambda r, *a, **k: r.raise_for_status()},
+        timeout=args.t
+    ).json()
+
+    print("{}{:z.0f}{}".format(
+        icon(wtr["current"]["weather_code"], wtr["current"]["is_day"]),
+        wtr["current"]["temperature_2m"],
+        wtr["current_units"]["temperature_2m"]
+    ))
+except RequestException as e:
+    exit(e)
+except KeyError as e:
+    exit(f"'{e}' not found in response data")
