@@ -62,25 +62,20 @@ func main() {
 	flag.Parse()
 
 	var operations []func(string) string
-	if ignoreCase {
+	switch {
+	case ignoreCase:
 		operations = append(operations, ignoreCaseOp)
-	}
-	if oneField != 0 {
+	case oneField != 0:
 		operations = append(operations, oneFieldOp)
-	}
-	if skipFirstChars != 0 {
+	case skipFirstChars != 0:
 		operations = append(operations, skipFirstCharsOp)
-	}
-	if skipLastChars != 0 {
+	case skipLastChars != 0:
 		operations = append(operations, skipLastCharsOp)
-	}
-	if skipFirstFields != 0 {
+	case skipFirstFields != 0:
 		operations = append(operations, skipFirstFieldsOp)
-	}
-	if skipLastFields != 0 {
+	case skipLastFields != 0:
 		operations = append(operations, skipLastFieldsOp)
-	}
-	if len(operations) == 0 {
+	case len(operations) == 0:
 		operations = append(operations, func(s string) string {
 			return s
 		})
@@ -137,7 +132,7 @@ func overwriteFile(name string, data *bytes.Buffer) {
 
 // "inspired" by https://github.com/ptrcnull/uuniq
 func uuniq(input io.Reader, output io.StringWriter, operations []func(string) string) error {
-	history := make(map[string]bool)
+	history := make(map[string]struct{})
 	scanner := bufio.NewScanner(input)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -149,12 +144,12 @@ func uuniq(input io.Reader, output io.StringWriter, operations []func(string) st
 			continue
 		}
 		processedLine := processLine(line, operations)
-		if !history[processedLine] {
+		if _, ok := history[processedLine]; !ok {
 			_, err := output.WriteString(line + "\n")
 			if err != nil {
 				return err
 			}
-			history[processedLine] = true
+			history[processedLine] = struct{}{}
 		}
 	}
 	return nil

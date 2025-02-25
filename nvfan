@@ -70,7 +70,7 @@ apply_settings() {
 	exit 1
 }
 echo "$0 started $(date)"
-trap "disable_manual_fan_control" EXIT QUIT INT
+trap disable_manual_fan_control EXIT QUIT INT
 enable_manual_fan_control
 
 while true; do

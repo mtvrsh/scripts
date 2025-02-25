@@ -10,13 +10,10 @@ FD_CMD="fd -t f . --base-directory ${NOTES_DIR}"
 [ "$1" ] && QUERY="-q $1"
 
 FILE=$(
-	$FD_CMD | fzf --header="alt-q:quit  alt-d:delete  alt-l:lazygit  alt-k:copy" \
-		--bind "alt-q:abort" \
+	$FD_CMD | fzf --header="alt-q:quit  alt-d:delete  alt-l:lazygit  alt-k:copy line" \
 		--bind "alt-d:execute-silent(rm $NOTES_DIR{})+reload($FD_CMD)" \
 		--bind "alt-l:execute(lazygit -p $NOTES_DIR)" \
 		--bind "alt-k:execute(cat $NOTES_DIR{}|fzf --tac|wl-copy)" \
-		--bind "alt-v:toggle-preview" \
-		--bind "tab:down" --bind "btab:up" \
 		--preview-window=up,70% --preview "$VIEWER $NOTES_DIR{}" --select-1 $QUERY
 )
 ${EDITOR-vi} ${OPTS} "${NOTES_DIR}${FILE}" && $0
