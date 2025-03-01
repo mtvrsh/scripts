@@ -4,16 +4,17 @@ set -e
 
 NOTES_DIR="${XDG_DOCUMENTS_DIR-$HOME/documents}/notes/"
 FD_CMD="fd -t f . --base-directory ${NOTES_DIR}"
-: "${VIEWER=bat --color=always --style=changes}"
-[ "$EDITOR" = "hx" ] && OPTS="-w $NOTES_DIR"
+: "${PREVIEW_CMD=bat --color=always --style=changes}"
+[ "$EDITOR" = "hx" ] && EDITOR_OPTS="-w $NOTES_DIR"
 
 [ "$1" ] && QUERY="-q $1"
 
 FILE=$(
-	$FD_CMD | fzf --header="alt-q:quit  alt-d:delete  alt-l:lazygit  alt-k:copy line" \
+	$FD_CMD | fzf --header="alt-q:quit  alt-d:delete  alt-l:lazygit  alt-k:copy line alt-n:new" \
 		--bind "alt-d:execute-silent(rm $NOTES_DIR{})+reload($FD_CMD)" \
 		--bind "alt-l:execute(lazygit -p $NOTES_DIR)" \
 		--bind "alt-k:execute(cat $NOTES_DIR{}|fzf --tac|wl-copy)" \
-		--preview-window=up,70% --preview "$VIEWER $NOTES_DIR{}" --select-1 $QUERY
+		--bind "alt-n:execute-silent(echo -n '# '>${NOTES_DIR}{q})+reload($FD_CMD)" \
+		--preview-window=up,70% --preview "$PREVIEW_CMD $NOTES_DIR{}" --select-1 $QUERY
 )
-${EDITOR-vi} ${OPTS} "${NOTES_DIR}${FILE}" && $0
+${EDITOR-vi} ${EDITOR_OPTS} "${NOTES_DIR}${FILE}" && $0
