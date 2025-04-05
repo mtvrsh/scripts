@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -31,7 +30,6 @@ func (v *runeValue) Set(s string) error {
 var (
 	ignoreCase      bool
 	ignoreNewLines  bool
-	inplace         bool
 	oneField        uint
 	skipFirstChars  uint
 	skipLastChars   uint
@@ -40,11 +38,14 @@ var (
 	delimeter       runeValue
 
 	fieldsFunc func(string) []string
+
+	history = make(map[string]struct{})
 )
 
 func main() {
 	log.SetFlags(log.Lshortfile)
 	flag.Usage = func() {
+		fmt.Fprint(os.Stderr, "Unordered uniq(1).\n\n")
 		fmt.Fprint(os.Stderr, "Unordered uniq(1).\n\n")
 		fmt.Fprintf(os.Stderr, "Usage: %v [OPTIONS] [FILE]...\n", os.Args[0])
 		flag.PrintDefaults()
@@ -52,7 +53,6 @@ func main() {
 	}
 	flag.BoolVar(&ignoreCase, "i", false, "ignore case during comparison")
 	flag.BoolVar(&ignoreNewLines, "n", false, "ignore duplicated newlines")
-	flag.BoolVar(&inplace, "w", false, "write to files instead of stdout")
 	flag.UintVar(&oneField, "f", 0, "use only field `N` for comparison")
 	flag.UintVar(&skipFirstChars, "cf", 0, "skip comparing first `N` characters")
 	flag.UintVar(&skipLastChars, "cl", 0, "skip comparing last `N` characters")
@@ -99,12 +99,6 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if inplace {
-			buf := make([]byte, 0, 1024)
-			outputBuf := bytes.NewBuffer(buf)
-			output = outputBuf
-			defer overwriteFile(arg, outputBuf)
-		}
 		if err = uuniq(input, output, operations); err != nil {
 			log.Print(err)
 			return
@@ -116,23 +110,8 @@ func main() {
 	}
 }
 
-func overwriteFile(name string, data *bytes.Buffer) {
-	realOutput, err := os.Create(name)
-	if err != nil {
-		log.Fatal(err)
-	}
-	_, err = realOutput.Write(data.Bytes())
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err = realOutput.Close(); err != nil {
-		log.Fatal(err)
-	}
-}
-
 // "inspired" by https://github.com/ptrcnull/uuniq
 func uuniq(input io.Reader, output io.StringWriter, operations []func(string) string) error {
-	history := make(map[string]struct{})
 	scanner := bufio.NewScanner(input)
 	for scanner.Scan() {
 		line := scanner.Text()
